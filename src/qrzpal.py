@@ -6,9 +6,10 @@ from datetime import datetime
 
 BASE_URL = 'https://logbook.qrz.com/api'
 
-
 if __name__ == '__main__':
     env = dotenv_values('.env')
+    print(env)
+    exit(0)
 
     logs = pd.read_csv(
         env['LOG_PATH'],
