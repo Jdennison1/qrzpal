@@ -1,11 +1,13 @@
 # QRZ Pal
+A Logbook helper to automatically forward your wsjt-x QSOs to QRZ. For Free (requires QRZ XML Data subscription)!
 
 ## Setup
 - Setup virtualenv in which to install the scripts dependencies
 ```shell
 python3 -m venv qrzpal_env
 source qrzpal_env/bin/activate
-python3 -m pip install -r requirements.txt
+python3 -m pip install poetry
+poetry install
 ```
 - Setup environment variables:
   - create a file in the cloned directory named `.env`, place the following key value pairs inside and save it. The `USR_KEY` for your QRZ account can be accessed here: https://www.qrz.com/docs/logbook30/api
@@ -16,9 +18,10 @@ MY_CALL=your_callsign_here
 ```
 
 ## Use
-Once you finish a session in wsjt-x, run the following command
+Before starting a session in wsjt-x, run the following commands
 ```shell
-python3 ./qrpal.py
+source qrzpal_env/bin/activate # if not already activated
+python3 -m qrzpal
 ```
-When the script completes, navigate to your wsjt-x .log file (the one referenced in your .env file) and clear out the contents and save the file. This will prevent the qrzpal script from attempting duplicate logbook inserts for future sessions.
+Continue on to using wsjt-x as usual. After finishing your wsjt-x session, kill the qrzpal process with CTRL+C
 
