@@ -18,8 +18,9 @@ MY_CALL=your_callsign_here
 ```
 
 ## Use
-Before starting a session in wsjt-x, run the following command
+Before starting a session in wsjt-x, run the following commands
 ```shell
+source qrzpal_env/bin/activate # if not already activated
 python3 -m qrzpal
 ```
 Continue on to using wsjt-x as usual. After finishing your wsjt-x session, kill the qrzpal process with CTRL+C
