@@ -1,8 +1,11 @@
+import math
+import time
 import requests
 import pandas as pd
-from dotenv import dotenv_values
-import math
 from datetime import datetime
+from dotenv import dotenv_values
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 BASE_URL = "https://logbook.qrz.com/api"
 
@@ -37,6 +40,28 @@ def parse_freq(f): # noqa C901
         return None
 
 
+def get_qsos() -> pd.DataFrame:
+    return pd.read_csv(
+        env["LOG_PATH"],
+        names=[
+            "date_start",
+            "time_start",
+            "date_end",
+            "time_end",
+            "call",
+            "square",
+            "frequency",
+            "qso_mode",
+            "sent",
+            "received",
+            "power",
+            "unk0",
+            "unk1",
+            "unk2",
+        ],
+    )
+
+
 def build_req_adif_str(data):
     # http://adif.org.uk/312/ADIF_312.htm#Data_Types_Enumerations_and_Fields
     if data.band is None:
@@ -59,35 +84,37 @@ def build_req_adif_str(data):
     )
 
 
+class WsjtxLogHandler(FileSystemEventHandler):
+    @staticmethod
+    def on_any_event(event):
+        if event.is_directory or event.event_type == 'created':
+            return None
+        elif event.event_type == 'modified' and \
+                env['LOG_PATH'].split('/')[-1] in event.src_path:
+            qso = get_qsos().iloc[-1]
+            qso['band'] = parse_freq(qso.frequency)
+
+            resp = requests.post(
+                BASE_URL,
+                data={
+                    "KEY": env["USR_KEY"],
+                    "ACTION": "INSERT",
+                    "ADIF": build_req_adif_str(qso)},
+            )
+
+            print(resp.text)
+
+
 if __name__ == "__main__":
     env = dotenv_values(".env")
+    wsjtx_logbook_observer = Observer()
+    log_handler = WsjtxLogHandler()
+    wsjtx_logbook_observer.schedule(log_handler, '/'.join(env['LOG_PATH'].split('/')[:-1]), recursive=True)
+    wsjtx_logbook_observer.start()
 
-    logs = pd.read_csv(
-        env["LOG_PATH"],
-        names=[
-            "date_start",
-            "time_start",
-            "date_end",
-            "time_end",
-            "call",
-            "square",
-            "frequency",
-            "qso_mode",
-            "sent",
-            "received",
-            "power",
-            "unk0",
-            "unk1",
-            "unk2",
-        ],
-    )
-
-    logs["band"] = logs["frequency"].apply(parse_freq)
-    logs["request"] = logs.apply(build_req_adif_str, axis=1)
-
-    for _, r in logs.iterrows():
-        resp = requests.post(
-            BASE_URL,
-            data={"KEY": env["USR_KEY"], "ACTION": "INSERT", "ADIF": r.request},
-        )
-        print(resp.text)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        wsjtx_logbook_observer.stop()
+        wsjtx_logbook_observer.join()
