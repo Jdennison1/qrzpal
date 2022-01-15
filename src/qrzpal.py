@@ -107,9 +107,15 @@ class WsjtxLogHandler(FileSystemEventHandler):
 
 if __name__ == "__main__":
     env = dotenv_values(".env")
+
     wsjtx_logbook_observer = Observer()
     log_handler = WsjtxLogHandler()
-    wsjtx_logbook_observer.schedule(log_handler, '/'.join(env['LOG_PATH'].split('/')[:-1]), recursive=True)
+
+    wsjtx_logbook_observer.schedule(
+        log_handler,
+        '/'.join(env['LOG_PATH'].split('/')[:-1]),
+        recursive=True)
+
     wsjtx_logbook_observer.start()
 
     try:
