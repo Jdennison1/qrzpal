@@ -79,6 +79,7 @@ def build_req_adif_str(data):
         <time_on:{len(qso_time)}>{qso_time}\
         <tx_pwr:{len(str(data.power))}>{str(data.power)}\
         <freq:{len(str(data.frequency))}>{str(data.frequency)}\
+        <gridsquare:{len(data.square)}>{data.square}\
         <eor>".replace(
         " ", ""
     )
