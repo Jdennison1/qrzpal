@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "qrzpal"
-version = "0.1.0"
+version = "0.2.0"
 description = "QRZ logging shim between WSJT-X and QRZ"
 authors = ["Joel Dennison <joel.dennison780@gmail.com>"]
 
